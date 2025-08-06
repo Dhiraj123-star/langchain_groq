@@ -109,17 +109,6 @@ python app.py --cli
 quit / exit / bye
 ```
 
-## 🏗️ Project Structure
-
-```
-langchain-groq-assistant/
-├── app.py                 # Main application file
-├── .env                   # Environment variables (create this)
-├── .env.example          # Example environment file
-├── .gitignore            # Git ignore rules
-├── requirements.txt      # Python dependencies
-└── README.md            # This file
-```
 
 ## 🔧 Configuration Options
 
