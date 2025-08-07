@@ -1,45 +1,55 @@
 # 🚀 LangChain + Groq Conversational Assistant
 
-A powerful, lightning-fast AI chatbot that combines **LangChain's** conversation management with **Groq's** ultra-fast inference capabilities. Built with **Streamlit** for an intuitive web interface and featuring both web and CLI modes.
-
+A powerful, lightning-fast AI chatbot that combines **LangChain's** conversation management with **Groq's** ultra-fast inference capabilities. Built with **Streamlit** for an intuitive web interface and featuring both web and CLI modes with **real-time streaming responses**.
 
 ## ✨ Key Features
 
 ### 🧠 **Advanced AI Capabilities**
-- **Multiple Model Support**: Choose from Llama-3.1, GPT-OSS, Kimi-K2, and Gemma2 models
-- **Conversation Memory**: Maintains context throughout conversations using LangChain's memory system
+- **Multiple Model Support**: Choose from Llama-3.1, GPT-OSS, Qwen3, and Gemma2 models
+- **Real-time Streaming**: Live response generation with visual streaming effects
+- **Conversation Memory**: Maintains context throughout conversations using modern LangChain implementation
 - **Smart Prompting**: Custom prompt templates for consistent, helpful responses
-- **Fast Inference**: Sub-second response times powered by Groq's optimized infrastructure
+- **Lightning-fast Inference**: Sub-second response times powered by Groq's optimized infrastructure
+
+### 🌊 **Streaming Experience**
+- **Live Response Generation**: Watch responses appear in real-time as they're generated
+- **Visual Cursor Effect**: Smooth typing animation during streaming
+- **Streaming Toggle**: Switch between streaming and instant response modes
+- **Performance Metrics**: Track streaming vs. regular response times
+- **Fallback Support**: Graceful degradation when streaming isn't available
 
 ### 🖥️ **Dual Interface Options**
-- **Web Interface**: Beautiful, responsive Streamlit UI with real-time chat
-- **CLI Mode**: Terminal-based interface for developers and power users
-- **Real-time Metrics**: Response generation time tracking
-- **Interactive Controls**: Adjustable temperature, model switching, conversation clearing
+- **Web Interface**: Beautiful, responsive Streamlit UI with real-time streaming chat
+- **CLI Mode**: Terminal-based interface with streaming support for developers
+- **Interactive Controls**: Adjustable temperature, model switching, streaming toggle
+- **Real-time Metrics**: Response generation and streaming time tracking
+- **Session Management**: Multiple conversation sessions with isolated history
 
 ### 🔐 **Secure Configuration**
 - **Environment Variables**: Secure API key management via `.env` files
 - **Flexible Setup**: Works with environment variables or manual input
-- **Visual Feedback**: Clear status indicators for API key validation
+- **Visual Feedback**: Clear status indicators for API key validation and streaming status
 - **Setup Guidance**: Built-in instructions for easy configuration
 
 ### ⚙️ **Developer-Friendly**
-- **Clean Architecture**: Modular, well-documented code structure
-- **Error Handling**: Comprehensive error management with helpful messages
-- **Extensible Design**: Easy to add new features and models
+- **Modern Architecture**: Built with latest LangChain patterns and RunnableWithMessageHistory
+- **Session-based Memory**: In-memory chat history with proper session isolation
+- **Dynamic Updates**: Hot-swap models and settings without restart
+- **Comprehensive Error Handling**: Helpful error messages and graceful fallbacks
 - **Production Ready**: Proper logging, validation, and edge case handling
 
 ## 🎯 Core Functionalities
 
 | Feature | Description | Benefits |
 |---------|-------------|----------|
-| **Multi-Model Chat** | Support for 4+ different AI models | Choose the best model for your use case |
-| **Persistent Memory** | Conversation context retention | Natural, flowing conversations |
-| **Real-time UI** | Instant response rendering | Smooth user experience |
-| **Dual Modes** | Web + CLI interfaces | Flexibility for different workflows |
-| **Secure Config** | Environment-based API management | Enhanced security practices |
-| **Performance Metrics** | Response time tracking | Monitor and optimize performance |
-| **Dynamic Controls** | Live parameter adjustment | Fine-tune responses on the fly |
+| **🌊 Real-time Streaming** | Live response generation with visual effects | Enhanced user engagement and immediate feedback |
+| **🤖 Multi-Model Chat** | Support for 5+ different AI models | Choose the best model for your specific use case |
+| **🧠 Session Memory** | Persistent conversation context with isolation | Natural, flowing conversations across sessions |
+| **⚡ Dual Response Modes** | Toggle between streaming and instant responses | Optimize for speed or experience preference |
+| **🖥️ Dual Interfaces** | Web UI + CLI with streaming support | Flexibility for different user workflows |
+| **🔐 Secure Config** | Environment-based API management | Enhanced security with visual validation |
+| **📊 Live Metrics** | Real-time performance tracking | Monitor streaming vs regular response times |
+| **🔄 Dynamic Controls** | Live parameter adjustment without restart | Fine-tune responses and streaming on the fly |
 
 ## 🚀 Quick Start
 
@@ -55,7 +65,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install langchain-groq streamlit langchain python-dotenv
+pip install langchain-groq streamlit langchain langchain-community python-dotenv
 ```
 
 ### 2. **Environment Setup**
@@ -74,12 +84,12 @@ GROQ_API_KEY=your_actual_groq_api_key_here
 
 ### 3. **Run the Application**
 
-**Web Interface (Recommended):**
+**Web Interface with Streaming (Recommended):**
 ```bash
 streamlit run app.py
 ```
 
-**CLI Mode:**
+**CLI Mode with Streaming:**
 ```bash
 python app.py --cli
 ```
@@ -88,70 +98,66 @@ python app.py --cli
 
 ### Web Interface Features
 
-1. **Model Selection**: Choose from multiple AI models in the sidebar
-2. **Temperature Control**: Adjust response creativity (0.0 = focused, 1.0 = creative)
-3. **Conversation Management**: Clear history or continue previous conversations
-4. **Real-time Chat**: Instant responses with typing indicators
-5. **Performance Metrics**: See response generation times
+1. **🌊 Streaming Toggle**: Enable/disable real-time response streaming
+2. **🤖 Model Selection**: Choose from 5 different AI models in the sidebar
+3. **🌡️ Temperature Control**: Adjust response creativity (0.0 = focused, 1.0 = creative)
+4. **🔄 Session Management**: Clear history, reset app, or continue conversations
+5. **📊 Live Metrics**: Watch streaming performance and chat statistics
+6. **⚡ Real-time Chat**: Instant or streaming responses with visual effects
 
 ### CLI Commands
 
 ```bash
-# Start CLI mode
+# Start CLI mode with streaming support
 python app.py --cli
 
-# Example conversation
-👤 You: What is machine learning?
-🤖 Assistant: Machine learning is a subset of artificial intelligence...
-⚡ (0.85s)
+# Example streaming conversation
+👤 You: Explain quantum computing
+🤖 Assistant: [Streams response in real-time...]
+🌊 Response streamed in 1.23s
 
-# Exit commands
-quit / exit / bye
+# Commands
+quit / exit / bye  # Exit application
+clear             # Clear conversation history
 ```
-
 
 ## 🔧 Configuration Options
 
 ### Available Models
 
-| Model | Description | Best For |
-|-------|-------------|----------|
-| `llama-3.1-8b-instant` | Fast, efficient Llama model | General conversations |
-| `openai/gpt-oss-20b` | Powerful open-source model | Complex reasoning |
-| `moonshotai/kimi-k2-instruct` | Instruction-tuned model | Task-oriented chat |
-| `gemma2-9b-it` | Google's Gemma model | Balanced performance |
+| Model | Description | Best For | Streaming Support |
+|-------|-------------|----------|-------------------|
+| `llama-3.1-8b-instant` | Fast, efficient Llama model | General conversations | ✅ Full |
+| `openai/gpt-oss-120b` | Large powerful model | Complex reasoning | ✅ Full |
+| `openai/gpt-oss-20b` | Balanced performance model | Most tasks | ✅ Full |
+| `qwen/qwen3-32b` | Advanced reasoning model | Technical discussions | ✅ Full |
+| `gemma2-9b-it` | Google's instruction-tuned model | Task completion | ✅ Full |
 
-### Parameters
+### Streaming Parameters
 
-- **Temperature**: `0.0-1.0` - Controls response randomness
-- **Max Tokens**: `1024` - Maximum response length
-- **Memory**: Conversation buffer with full context retention
+- **🌊 Streaming Mode**: Real-time response generation with visual cursor
+- **📝 Regular Mode**: Instant full responses with thinking indicator
+- **🌡️ Temperature**: `0.0-1.0` - Controls response randomness
+- **💾 Session Management**: Isolated conversation histories
+- **⚡ Performance Tracking**: Streaming vs regular response time metrics
 
 ## 🛠️ Advanced Features
 
-### Conversation Memory
-```python
-# The app maintains conversation context using LangChain's ConversationBufferMemory
-memory = ConversationBufferMemory(
-    return_messages=True,
-    memory_key="history"
-)
-```
+### Real-time Streaming
+- **Live Generation**: Responses appear character by character as they're generated
+- **Visual Effects**: Smooth cursor animation and typing indicators
+- **Performance Metrics**: Track streaming speed and total response time
+- **Fallback Support**: Graceful degradation to character-by-character simulation
 
-### Custom Prompting
-```python
-# Customizable system prompt for consistent behavior
-template = """
-You are a helpful and friendly AI assistant. You provide clear, informative responses 
-and maintain context throughout the conversation.
-"""
-```
+### Session Management
+- **Memory Isolation**: Each session maintains separate conversation history
+- **Dynamic Updates**: Change models and settings without losing context
+- **History Management**: Clear individual sessions or reset entire application
 
-### Error Handling
-- Automatic API key validation
-- Network error recovery
-- User-friendly error messages
-- Graceful degradation
+### Modern Architecture
+- **RunnableWithMessageHistory**: Latest LangChain conversation patterns
+- **In-memory Storage**: Fast, efficient session-based chat history
+- **Hot Configuration**: Update settings without restarting the application
 
 ## 🚦 Troubleshooting
 
@@ -160,20 +166,27 @@ and maintain context throughout the conversation.
 **❌ "GROQ_API_KEY not found"**
 - Solution: Create `.env` file with your API key
 
-**❌ "Failed to initialize"**
+**❌ "Streaming not working"**
+- Check internet connection stability
+- Try toggling streaming mode off/on
+- Verify model supports streaming
+
+**❌ "Failed to initialize chat handler"**
 - Check internet connection
 - Verify API key is valid
 - Ensure sufficient API credits
 
-**❌ "Model not available"**
-- Try a different model from the dropdown
-- Check Groq service status
+**❌ "Session history issues"**
+- Try clearing conversation history
+- Reset application if problems persist
 
-### Debug Mode
+### Performance Tips
 
-Enable verbose logging by setting `verbose=True` in the conversation chain.
-
+- **For fastest responses**: Use `llama-3.1-8b-instant` with streaming disabled
+- **For best experience**: Use any model with streaming enabled
+- **For complex tasks**: Use `openai/gpt-oss-120b` or `qwen/qwen3-32b`
+- **For balanced performance**: Use `gemma2-9b-it` with streaming enabled
 
 **⚡ Built with ❤️ using LangChain + Groq + Streamlit**
 
-*Start chatting with AI in seconds - no complex setup required!*
+*Experience lightning-fast AI conversations with real-time streaming - no complex setup required!*
