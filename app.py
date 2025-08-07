@@ -1,90 +1,51 @@
 """
-Simple Langchain + Groq API Conversational Assistant
-A basic chatbot that uses Groq's fast inference with Langchain's conversation management
+Main Streamlit Application for Langchain + Groq Conversational Assistant
+Modern implementation without deprecation warnings
 """
 
 import os
-from dotenv import load_dotenv
-from langchain_groq import ChatGroq
-from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationChain
-from langchain.prompts import PromptTemplate
-import streamlit as st
-from typing import List
+import sys
 import time
+from typing import List, Dict, Any
+
+import streamlit as st
+from dotenv import load_dotenv
+
+# Import our custom chat handler
+from chat_handler import ChatHandler, create_chat_handler
 
 # Load environment variables
 load_dotenv()
 
-# Configuration
-DEFAULT_MODEL_NAME = "openai/gpt-oss-20b" 
+def initialize_session_state():
+    """Initialize Streamlit session state variables"""
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
+    if "chat_handler" not in st.session_state:
+        st.session_state.chat_handler = None
+    
+    if "session_id" not in st.session_state:
+        st.session_state.session_id = "streamlit_session"
+    
+    if "last_settings" not in st.session_state:
+        st.session_state.last_settings = {}
 
-def setup_groq_chat(api_key=None, model_name=None, temperature=0.7):
-    """Initialize the Groq chat model"""
-    if not api_key:
-        api_key = os.getenv("GROQ_API_KEY")
-        
-    if not api_key:
-        raise ValueError("GROQ_API_KEY not found in environment variables or provided as parameter")
-    
-    return ChatGroq(
-        groq_api_key=api_key,
-        model_name=model_name or DEFAULT_MODEL_NAME,
-        temperature=temperature,
-        max_tokens=1024
-    )
-
-def create_conversation_chain(llm):
-    """Create a conversation chain with memory"""
-    
-    # Custom prompt template
-    template = """
-    You are a helpful and friendly AI assistant. You provide clear, informative responses 
-    and maintain context throughout the conversation.
-    
-    Current conversation:
-    {history}
-    
-    Human: {input}
-    Assistant:"""
-    
-    prompt = PromptTemplate(
-        input_variables=["history", "input"],
-        template=template
-    )
-    
-    # Memory to store conversation history
-    memory = ConversationBufferMemory(
-        return_messages=True,
-        memory_key="history"
-    )
-    
-    # Create conversation chain
-    conversation = ConversationChain(
-        llm=llm,
-        prompt=prompt,
-        memory=memory,
-        verbose=True
-    )
-    
-    return conversation
-
-def main():
+def setup_page_config():
+    """Setup Streamlit page configuration"""
     st.set_page_config(
         page_title="Langchain + Groq Assistant",
         page_icon="🚀",
-        layout="wide"
+        layout="wide",
+        initial_sidebar_state="expanded"
     )
-    
-    st.title("🚀 Langchain + Groq Conversational Assistant")
-    st.markdown("*Powered by Groq's lightning-fast inference and Langchain's conversation management*")
-    
-    # Sidebar for configuration
+
+def render_sidebar() -> Dict[str, Any]:
+    """Render sidebar with configuration options"""
     with st.sidebar:
         st.header("⚙️ Configuration")
         
-        # API Key input - check environment first
+        # API Key Management
         env_api_key = os.getenv("GROQ_API_KEY")
         
         if env_api_key:
@@ -109,41 +70,63 @@ def main():
             st.error("🚫 Please provide a Groq API key to continue")
             st.stop()
         
-        # Model selection
+        # Model Selection
         model_options = [
             "llama-3.1-8b-instant",
-            "openai/gpt-oss-20b", 
-            "moonshotai/kimi-k2-instruct",
+            "openai/gpt-oss-120b", 
+            "openai/gpt-oss-20b",
+            "qwen/qwen3-32b",
             "gemma2-9b-it"
         ]
         
         selected_model = st.selectbox(
-            "Model",
+            "🤖 Model",
             model_options,
             index=0,
             help="Choose the Groq model for inference"
         )
         
-        # Temperature slider
+        # Streaming Toggle
+        enable_streaming = st.checkbox(
+            "🌊 Enable Streaming",
+            value=True,
+            help="Stream responses in real-time for better user experience"
+        )
+        
+        # Temperature Slider
         temperature = st.slider(
-            "Temperature",
+            "🌡️ Temperature",
             min_value=0.0,
             max_value=1.0,
             value=0.7,
             step=0.1,
-            help="Controls randomness in responses"
+            help="Controls randomness in responses (0.0 = focused, 1.0 = creative)"
         )
         
-        # Clear conversation button
-        if st.button("🗑️ Clear Conversation"):
-            st.session_state.messages = []
-            st.session_state.conversation = None
-            st.rerun()
+        # Action Buttons
+        col1, col2 = st.columns(2)
         
-        # Environment setup instructions
+        with col1:
+            if st.button("🗑️ Clear Chat", use_container_width=True):
+                clear_conversation()
+        
+        with col2:
+            if st.button("🔄 Reset", use_container_width=True):
+                reset_application()
+        
+        # Chat Statistics
+        if st.session_state.messages:
+            st.divider()
+            st.subheader("📊 Chat Stats")
+            user_msgs = len([m for m in st.session_state.messages if m["role"] == "user"])
+            ai_msgs = len([m for m in st.session_state.messages if m["role"] == "assistant"])
+            st.metric("Messages", f"{user_msgs + ai_msgs}")
+            st.metric("Exchanges", f"{min(user_msgs, ai_msgs)}")
+        
+        # Setup Instructions
         with st.expander("📋 Setup Instructions"):
             st.markdown("""
-            **For .env file setup:**
+            **Environment Setup:**
             1. Create a `.env` file in your project directory
             2. Add: `GROQ_API_KEY=your_actual_api_key_here`
             3. Restart the application
@@ -151,39 +134,80 @@ def main():
             **Get API Key:**
             - Visit [Groq Console](https://console.groq.com/)
             - Create account and generate API key
+            
+            **Features:**
+            - 🌊 Real-time streaming responses
+            - 🧠 Conversation memory
+            - 🚀 Lightning-fast inference
+            - 🔧 Multiple model options
             """)
     
-    # Initialize session state
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    return {
+        "api_key": api_key,
+        "model": selected_model,
+        "streaming": enable_streaming,
+        "temperature": temperature
+    }
+
+def initialize_chat_handler(config: Dict[str, Any]) -> ChatHandler:
+    """Initialize or update chat handler based on configuration"""
+    current_settings = {
+        "model": config["model"],
+        "temperature": config["temperature"],
+        "streaming": config["streaming"]
+    }
     
-    # Initialize conversation chain when needed
-    if "conversation" not in st.session_state or st.session_state.get("last_model") != selected_model:
+    # Check if we need to create new handler or update existing one
+    if (st.session_state.chat_handler is None or 
+        st.session_state.last_settings != current_settings):
+        
         try:
-            # Initialize Groq chat
-            llm = setup_groq_chat(api_key, selected_model, temperature)
-            
-            # Create conversation chain
-            st.session_state.conversation = create_conversation_chain(llm)
-            st.session_state.last_model = selected_model
-            
-            if not st.session_state.messages:
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": f"Hello! I'm your AI assistant powered by {selected_model} on Groq. How can I help you today?"
-                })
+            if st.session_state.chat_handler is None:
+                # Create new handler
+                st.session_state.chat_handler = create_chat_handler(
+                    api_key=config["api_key"],
+                    model_name=config["model"],
+                    temperature=config["temperature"],
+                    streaming=config["streaming"]
+                )
                 
+                # Add welcome message
+                if not st.session_state.messages:
+                    welcome_msg = f"Hello! I'm your AI assistant powered by **{config['model']}** on Groq."
+                    if config["streaming"]:
+                        welcome_msg += " 🌊 Streaming is enabled for real-time responses!"
+                    else:
+                        welcome_msg += " How can I help you today?"
+                    
+                    st.session_state.messages.append({
+                        "role": "assistant",
+                        "content": welcome_msg
+                    })
+            else:
+                # Update existing handler
+                st.session_state.chat_handler.update_settings(
+                    model_name=config["model"],
+                    temperature=config["temperature"],
+                    streaming=config["streaming"]
+                )
+            
+            st.session_state.last_settings = current_settings
+            
         except Exception as e:
-            st.error(f"❌ Failed to initialize: {str(e)}")
+            st.error(f"❌ Failed to initialize chat handler: {str(e)}")
             st.info("💡 Please check your API key and internet connection")
             st.stop()
     
-    # Display conversation history
+    return st.session_state.chat_handler
+
+def display_chat_history():
+    """Display the conversation history"""
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-    
-    # Chat input
+
+def handle_user_input(chat_handler: ChatHandler, config: Dict[str, Any]):
+    """Handle user input and generate AI response"""
     if prompt := st.chat_input("Ask me anything..."):
         # Add user message
         st.session_state.messages.append({"role": "user", "content": prompt})
@@ -191,60 +215,138 @@ def main():
         with st.chat_message("user"):
             st.markdown(prompt)
         
-        # Generate assistant response
+        # Generate AI response
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                start_time = time.time()
-                
-                try:
-                    # Get response from conversation chain
-                    response = st.session_state.conversation.predict(input=prompt)
+            start_time = time.time()
+            
+            try:
+                if config["streaming"]:
+                    # Streaming response
+                    message_placeholder = st.empty()
+                    full_response = ""
+                    
+                    # Stream the response
+                    for chunk in chat_handler.stream_response(prompt, st.session_state.session_id):
+                        full_response += chunk
+                        message_placeholder.markdown(full_response + "▌")  # Cursor effect
+                    
+                    # Remove cursor and show final response
+                    message_placeholder.markdown(full_response)
                     
                     inference_time = time.time() - start_time
-                    
-                    st.markdown(response)
-                    
-                    # Show inference time
-                    st.caption(f"⚡ Response generated in {inference_time:.2f}s")
+                    st.caption(f"🌊 Response streamed in {inference_time:.2f}s")
                     
                     # Add to session state
                     st.session_state.messages.append({
                         "role": "assistant", 
-                        "content": response
+                        "content": full_response
                     })
                     
-                except Exception as e:
-                    st.error(f"❌ Error generating response: {str(e)}")
-                    st.info("💡 Please check your API key and try again")
+                else:
+                    # Regular response
+                    with st.spinner("🤔 Thinking..."):
+                        response = chat_handler.get_response(prompt, st.session_state.session_id)
+                        
+                        inference_time = time.time() - start_time
+                        
+                        st.markdown(response)
+                        st.caption(f"⚡ Response generated in {inference_time:.2f}s")
+                        
+                        # Add to session state
+                        st.session_state.messages.append({
+                            "role": "assistant", 
+                            "content": response
+                        })
+                
+            except Exception as e:
+                st.error(f"❌ Error generating response: {str(e)}")
+                st.info("💡 Please check your API key and try again")
 
-if __name__ == "__main__":
-    # For running without Streamlit (command line version)
-    if len(os.sys.argv) > 1 and os.sys.argv[1] == "--cli":
-        print("🚀 Langchain + Groq CLI Assistant")
-        print("Type 'quit' to exit\n")
+def clear_conversation():
+    """Clear the conversation history"""
+    st.session_state.messages = []
+    if st.session_state.chat_handler:
+        st.session_state.chat_handler.clear_history(st.session_state.session_id)
+    st.rerun()
+
+def reset_application():
+    """Reset the entire application state"""
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
+
+def render_header():
+    """Render the main header"""
+    st.title("🚀 LangChain + Groq Conversational Assistant")
+    st.markdown("*Powered by Groq's lightning-fast inference and modern LangChain implementation*")
+    
+    # Add status indicators
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Status", "🟢 Online", help="Application is running")
+    with col2:
+        if st.session_state.chat_handler:
+            st.metric("Model", st.session_state.chat_handler.model_name, help="Current AI model")
+    with col3:
+        if st.session_state.chat_handler:
+            stream_status = "🌊 Enabled" if st.session_state.chat_handler.streaming else "📝 Disabled"
+            st.metric("Streaming", stream_status, help="Response streaming status")
+
+def main():
+    """Main application function"""
+    # Setup
+    setup_page_config()
+    initialize_session_state()
+    
+    # Render UI
+    render_header()
+    
+    # Get configuration from sidebar
+    config = render_sidebar()
+    
+    # Initialize chat handler
+    chat_handler = initialize_chat_handler(config)
+    
+    # Display conversation
+    display_chat_history()
+    
+    # Handle user input
+    handle_user_input(chat_handler, config)
+
+def run_cli():
+    """CLI version of the application"""
+    print("🚀 LangChain + Groq CLI Assistant")
+    print("=" * 50)
+    print("Commands: 'quit/exit/bye' to exit, 'clear' to clear history")
+    print("-" * 50)
+    
+    try:
+        # Initialize chat handler
+        handler = create_chat_handler(streaming=False)
         
-        try:
-            # Initialize
-            llm = setup_groq_chat()
-            conversation = create_conversation_chain(llm)
-            
-            print(f"✅ Successfully connected to Groq API")
-            print(f"📡 Using model: {DEFAULT_MODEL_NAME}")
-            
-        except Exception as e:
-            print(f"❌ Error initializing: {str(e)}")
-            print("💡 Please check your GROQ_API_KEY in .env file")
-            exit(1)
+        print(f"✅ Successfully connected to Groq API")
+        print(f"📡 Using model: {handler.model_name}")
+        
+        session_id = "cli_session"
         
         while True:
             user_input = input("\n👤 You: ")
+            
             if user_input.lower() in ['quit', 'exit', 'bye']:
                 print("👋 Goodbye!")
                 break
                 
+            if user_input.lower() == 'clear':
+                handler.clear_history(session_id)
+                print("🗑️ Conversation history cleared!")
+                continue
+                
+            if not user_input.strip():
+                continue
+                
             try:
                 start_time = time.time()
-                response = conversation.predict(input=user_input)
+                response = handler.get_response(user_input, session_id)
                 inference_time = time.time() - start_time
                 
                 print(f"\n🤖 Assistant: {response}")
@@ -253,8 +355,16 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"❌ Error: {e}")
                 print("💡 Please check your connection and API key")
+                
+    except Exception as e:
+        print(f"❌ Error initializing: {str(e)}")
+        print("💡 Please check your GROQ_API_KEY in .env file")
+        exit(1)
+
+if __name__ == "__main__":
+    # Check for CLI mode
+    if len(sys.argv) > 1 and sys.argv[1] == "--cli":
+        run_cli()
     else:
         # Run Streamlit app
         main()
-
-
