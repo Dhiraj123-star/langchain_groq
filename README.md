@@ -3,6 +3,7 @@
 
 A powerful, lightning-fast AI chatbot that combines **LangChain's** conversation management with **Groq's** ultra-fast inference capabilities and **OpenAI's** high-quality embeddings for document Q\&A. Built with **Streamlit** for an intuitive web interface featuring both conversational chat and intelligent document analysis with **real-time streaming responses**.
 Now fully containerized using **Docker** and orchestrated with **Docker Compose** for easy deployment and scaling.
+Now also integrated with **GitHub Actions CI/CD** for automated Docker image building and pushing to Docker Hub.
 
 ## ✨ Key Features
 
@@ -42,6 +43,14 @@ Now fully containerized using **Docker** and orchestrated with **Docker Compose*
 * **Healthchecks** for automatic container monitoring
 * **Environment variables** managed via `.env` for API keys and Streamlit config
 * **Persistent storage** for data and logs via Docker volumes
+
+### 🛠️ **CI/CD with GitHub Actions**
+
+* **Automated Builds**: On every push to `main` or manual trigger, the Docker image is built and pushed to Docker Hub (`dhiraj918106/langchain-groq-assistant`)
+* **Cross-Platform Support**: Builds for both `linux/amd64` and `linux/arm64`
+* **Secure Credentials**: Docker Hub credentials stored as GitHub Actions secrets (`DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`)
+* **Manual Trigger Support**: Deploy anytime via GitHub Actions "Run workflow" button
+* **Fast Delivery**: New code changes are automatically available as a new container image
 
 ### 🖥️ **Dual Interface Options**
 
@@ -84,26 +93,27 @@ Now fully containerized using **Docker** and orchestrated with **Docker Compose*
 | **🐳 Containerized Deployment** | Docker + Docker Compose setup with volumes, networks, and health checks | Easy deployment, scalability, and persistent storage |
 | **🔐 Secure Config**            | Environment-based API management                                        | Enhanced security with visual validation             |
 | **📊 Live Metrics**             | Real-time performance tracking                                          | Monitor response times and document statistics       |
+| **⚙️ CI/CD Automation**         | GitHub Actions builds & pushes Docker image to Docker Hub automatically | Always up-to-date production images                  |
 
 ## 🚀 Quick Start (Docker)
 
 1. **Clone the repository**
 
-   ```
+   ```bash
    git clone <your-repo-url>
    cd langchain-groq-assistant
    ```
 
 2. **Create a `.env` file** in your project root:
 
-   ```
+   ```bash
    GROQ_API_KEY=your_actual_groq_api_key_here
    OPENAI_API_KEY=your_actual_openai_api_key_here
    ```
 
 3. **Build and run using Docker Compose**
 
-   ```
+   ```bash
    docker-compose up --build
    ```
 
@@ -117,4 +127,32 @@ Now fully containerized using **Docker** and orchestrated with **Docker Compose*
 
 * `./data` → `/app/data` for documents
 * `./logs` → `/app/logs` for logs
+
+## 🚀 CI/CD Setup (GitHub Actions → Docker Hub)
+
+1. **Create Docker Hub Access Token**
+
+   * Go to [Docker Hub Security Settings](https://hub.docker.com/settings/security)
+   * Create a new access token
+
+2. **Add GitHub Secrets**
+   In your GitHub repo: **Settings → Secrets and variables → Actions**
+   Add:
+
+   ```
+   DOCKERHUB_USERNAME=your_dockerhub_username
+   DOCKERHUB_TOKEN=your_dockerhub_access_token
+   ```
+
+3. **Workflow**
+
+   * The workflow file is located at `.github/workflows/docker-build-push.yml`
+   * It builds and pushes the Docker image to `dhiraj918106/langchain-groq-assistant` on each push to `main` or when manually triggered
+
+4. **Trigger Deployment**
+
+   * Push changes to the `main` branch, or
+   * Manually trigger via GitHub Actions UI
+
+---
 
