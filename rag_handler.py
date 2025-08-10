@@ -30,8 +30,8 @@ class RAGHandler:
     """Handles RAG functionality for document Q&A"""
     
     def __init__(self, groq_api_key: str, openai_api_key: str = None, 
-                 model_name: str = "llama-3.1-8b-instant", 
-                 temperature: float = 0.7, embedding_model: str = "text-embedding-3-small"):
+                model_name: str = "llama-3.1-8b-instant", 
+                temperature: float = 0.7, embedding_model: str = "text-embedding-3-small"):
         """
         Initialize RAG handler
         
@@ -275,7 +275,7 @@ Answer: """)
         self.rag_chain = None
     
     def update_model_settings(self, model_name: str = None, temperature: float = None,
-                             embedding_model: str = None):
+                            embedding_model: str = None):
         """Update model settings and recreate components"""
         updated_llm = False
         updated_embeddings = False
@@ -317,9 +317,9 @@ Answer: """)
 
 
 def create_rag_handler(groq_api_key: str, openai_api_key: str = None,
-                      model_name: str = "llama-3.1-8b-instant", 
-                      temperature: float = 0.7, 
-                      embedding_model: str = "text-embedding-3-small") -> RAGHandler:
+                        model_name: str = "llama-3.1-8b-instant", 
+                        temperature: float = 0.7, 
+                        embedding_model: str = "text-embedding-3-small") -> RAGHandler:
     """
     Factory function to create RAG handler
     
