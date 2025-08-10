@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  langchain-groq-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: langchain-groq-assistant
+    ports:
+      - "8501:8501"
+    environment:
+      # Environment variables - replace with your actual API keys or use .env file
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PYTHONUNBUFFERED=1
+      # Streamlit configuration via environment variables
+      - STREAMLIT_SERVER_HEADLESS=true
+      - STREAMLIT_SERVER_ENABLE_CORS=false
+      - STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION=false
+      - STREAMLIT_SERVER_FILE_WATCHER_TYPE=none
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+      - STREAMLIT_GLOBAL_DATA_FRAME_SERIALIZATION=legacy
+      - STREAMLIT_CLIENT_SHOW_ERROR_DETAILS=true
+      - HOME=/home/appuser
+    env_file:
+      - .env  # Load environment variables from .env file
+    volumes:
+      # Mount volumes for persistent data and development
+      - ./data:/app/data  # For any data files you might want to persist
+      - ./logs:/app/logs  # For application logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - langchain-network
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+networks:
+  langchain-network:
+    driver: bridge
+
+volumes:
+  # Named volumes for persistent storage
+  app-data:
+  app-logs:
