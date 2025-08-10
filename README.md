@@ -155,4 +155,4 @@ Now also integrated with **GitHub Actions CI/CD** for automated Docker image bui
    * Manually trigger via GitHub Actions UI
 
 ---
-
+Experience lightning-fast AI conversations and intelligent document analysis with RAG capabilities — now fully containerized with Docker & Docker Compose, and seamlessly deployed using CI/CD pipelines!
